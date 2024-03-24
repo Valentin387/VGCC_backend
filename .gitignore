@@ -1,0 +1,16 @@
+# Ignore pycache
+__pycache__
+
+# Ignore .env file
+.env
+
+# Ignore the Jupyter checkpoints
+*.ipynb_checkpoints
+
+# Ignore the google calendar credentials and the user's token
+credentials.json
+token.json
+tokens.json
+
+# Ignore the virtual environment
+venv/
