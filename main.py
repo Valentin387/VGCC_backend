@@ -31,8 +31,12 @@ llm = ChatOpenAI(openai_api_key=api_key)
 
 # Load content from the local file
 file_path = "text.txt"
-with open(file_path, "r", encoding="utf-8") as file:
-    text_content = file.read()
+try:
+    with open(file_path, "r", encoding="utf-8") as file:
+        text_content = file.read()
+except FileNotFoundError: # If the file does not exist, create it
+    with open(file_path, "w", encoding="utf-8") as file:
+        file.write("sample text content")
 
 # the embeddings prepare the document for vectorization
 embeddings = OpenAIEmbeddings(openai_api_key=api_key)
@@ -43,7 +47,6 @@ documents = text_splitter.split_documents([Document(page_content=text_content)])
 vector = FAISS.from_documents(documents, embeddings)
 
 # First we need a prompt that we can pass into an LLM to generate this search query
-
 prompt = ChatPromptTemplate.from_messages([
     ("system", "Answer the user's questions based on the below context:\n\n{context}"),
     MessagesPlaceholder(variable_name="chat_history"),
@@ -53,7 +56,7 @@ prompt = ChatPromptTemplate.from_messages([
 document_chain = create_stuff_documents_chain(llm, prompt)
 retriever = vector.as_retriever()
 retrieval_chain = create_retrieval_chain(retriever, document_chain)
-retriever_chain = create_history_aware_retriever(llm, retriever, prompt)
+#retriever_chain = create_history_aware_retriever(llm, retriever, prompt)
 #retrieval_chain = create_retrieval_chain(retriever_chain, document_chain)
 
 chat_history = [HumanMessage(content="Hello"), AIMessage(content="Hello! how can I help you today?")]
@@ -81,6 +84,16 @@ async def delete_text():
         return {"message": "text.txt deleted successfully"}
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="text.txt not found")
+    
+# Endpoint to create text.txt
+@app.post("/create-text/")
+async def create_text():
+    try:
+        with open("text.txt", "w") as text:
+            text.write("Valentin is Colombian, he is 22 years old, born in 2001 and is a software engineering student.")
+        return {"message": "text.txt created successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Additional endpoints can be added as needed
 
