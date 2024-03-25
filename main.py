@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException
 import os
 import sys
 from dotenv import load_dotenv
+import datetime
 
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
@@ -30,13 +31,21 @@ app = FastAPI()
 llm = ChatOpenAI(openai_api_key=api_key)
 
 # Load content from the local file
-file_path = "text.txt"
-try:
+def load_content():
+  file_path = "text.txt"
+  try:
     with open(file_path, "r", encoding="utf-8") as file:
-        text_content = file.read()
-except FileNotFoundError: # If the file does not exist, create it
+      text_content = file.read()
+  except FileNotFoundError:
+    # If the file doesn't exist, create it with some initial content
     with open(file_path, "w", encoding="utf-8") as file:
-        file.write("sample text content")
+      current_datetime = datetime.datetime.now()
+      formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+      text_content = f"Current date and time: {formatted_datetime}\n"
+      file.write(text_content)
+  return text_content
+
+text_content = load_content()
 
 # the embeddings prepare the document for vectorization
 embeddings = OpenAIEmbeddings(openai_api_key=api_key)
@@ -85,13 +94,20 @@ async def delete_text():
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="text.txt not found")
     
-# Endpoint to create text.txt
-@app.post("/create-text/")
-async def create_text():
+# Endpoint to append text to text.txt
+@app.post("/append-text/")
+async def append_text(text_to_append: str):
     try:
-        with open("text.txt", "w") as text:
-            text.write("Valentin is Colombian, he is 22 years old, born in 2001 and is a software engineering student.")
-        return {"message": "text.txt created successfully"}
+        with open("text.txt", "a", encoding="utf-8") as file:
+            file.write(text_to_append + "\n")
+        # Reload content and rebuild retrieval chain after appending
+        global text_content, documents, vector, retrieval_chain
+        text_content = load_content()  # Reload content after appending
+        documents = text_splitter.split_documents([Document(page_content=text_content)])
+        vector = FAISS.from_documents(documents, embeddings)
+        retriever = vector.as_retriever()
+        retrieval_chain = create_retrieval_chain(retriever, document_chain)
+        return {"message": "Text appended successfully. Retrieval chain updated."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
