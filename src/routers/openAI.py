@@ -1,21 +1,17 @@
 #Libraries
-from fastapi import FastAPI, HTTPException
+from fastapi import HTTPException, APIRouter
 import os
-import sys
 from dotenv import load_dotenv
 import datetime
 
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-from langchain_community.document_loaders import WebBaseLoader
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 from langchain_core.documents import Document
-from langchain.chains import create_history_aware_retriever
 from langchain_core.prompts import MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
 
@@ -23,9 +19,6 @@ load_dotenv()
 
 # Load environment variables
 api_key = os.getenv("OPENAI_API_KEY")
-
-# Initialize FastAPI app
-app = FastAPI()
 
 # Initialize ChatGPT instance
 llm = ChatOpenAI(openai_api_key=api_key)
@@ -70,8 +63,11 @@ retrieval_chain = create_retrieval_chain(retriever, document_chain)
 
 chat_history = [HumanMessage(content="Hello"), AIMessage(content="Hello! how can I help you today?")]
 
+# Initialize FastAPI router
+openAI_router = APIRouter()
+
 # Endpoint to receive user input and return LLM response
-@app.post("/llm/response/")
+@openAI_router.post("/llm/response/", tags=["OpenAI"])
 async def llm_response(input_text: str):
     # Get LLM response for user input
 
@@ -86,7 +82,7 @@ async def llm_response(input_text: str):
     return {"chat_history": chat_history}
 
 # Endpoint to delete text.txt
-@app.delete("/delete-text/")
+@openAI_router.delete("/delete-text/", tags=["OpenAI"])
 async def delete_text():
     try:
         os.remove("text.txt")
@@ -95,7 +91,7 @@ async def delete_text():
         raise HTTPException(status_code=404, detail="text.txt not found")
     
 # Endpoint to append text to text.txt
-@app.post("/append-text/")
+@openAI_router.post("/append-text/", tags=["OpenAI"])
 async def append_text(text_to_append: str):
     try:
         with open("text.txt", "a", encoding="utf-8") as file:
@@ -110,10 +106,3 @@ async def append_text(text_to_append: str):
         return {"message": "Text appended successfully. Retrieval chain updated."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-# Additional endpoints can be added as needed
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", port=8000, reload=True)
-
