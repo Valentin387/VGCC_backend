@@ -29,9 +29,6 @@ app = FastAPI()
 # Initialize ChatGPT instance
 llm = ChatOpenAI(openai_api_key=api_key)
 
-# The String Parser formats the output to a string
-output_parser = StrOutputParser()
-
 # Load content from the local file
 file_path = "text.txt"
 with open(file_path, "r", encoding="utf-8") as file:
@@ -48,21 +45,33 @@ vector = FAISS.from_documents(documents, embeddings)
 # First we need a prompt that we can pass into an LLM to generate this search query
 
 prompt = ChatPromptTemplate.from_messages([
+    ("system", "Answer the user's questions based on the below context:\n\n{context}"),
     MessagesPlaceholder(variable_name="chat_history"),
     ("user", "{input}"),
-    ("user", "Given the above conversation, generate a search query to look up in order to get information relevant to the conversation")
 ])
 
 document_chain = create_stuff_documents_chain(llm, prompt)
 retriever = vector.as_retriever()
+retrieval_chain = create_retrieval_chain(retriever, document_chain)
 retriever_chain = create_history_aware_retriever(llm, retriever, prompt)
+#retrieval_chain = create_retrieval_chain(retriever_chain, document_chain)
+
+chat_history = [HumanMessage(content="Hello"), AIMessage(content="Hello! how can I help you today?")]
 
 # Endpoint to receive user input and return LLM response
 @app.post("/llm/response/")
 async def llm_response(input_text: str):
     # Get LLM response for user input
-    response = llm.invoke(input_text)
-    return {"response": response}
+
+    response = retrieval_chain.invoke({
+    "chat_history": chat_history,
+    "input": input_text
+    })
+    # Update chat history with the new human query and AI response
+    chat_history.append(HumanMessage(content=input_text))
+    chat_history.append(AIMessage(content=response["answer"]))
+
+    return {"chat_history": chat_history}
 
 # Endpoint to delete text.txt
 @app.delete("/delete-text/")
@@ -77,5 +86,5 @@ async def delete_text():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("main:app", port=8000, reload=True)
 
