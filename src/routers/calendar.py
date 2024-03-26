@@ -9,6 +9,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google.auth.transport.requests import Request
+from routers.openAI import append_text
 
 
 # Initialize FastAPI router
@@ -73,7 +74,8 @@ async def get_calendar_events(start: str, end: str):
             user_events = await fetch_user_events(creds, start, end, cont)
             all_events[f"User {cont}"] = user_events  # Add user_events with formatted key
             cont+=1
-        return all_events
+        await append_text(json.dumps(all_events, indent=4))
+        return {"message": "Text appended successfully. Retrieval chain updated."}
     except Exception as error:
         raise HTTPException(status_code=500, detail=f"An error occurred: {error}")
 
@@ -101,3 +103,12 @@ async def fetch_user_events(creds, start: str, end: str, numuser: int):
             start = event["start"].get("dateTime", event["start"].get("date"))
             user_events.append({"start": start, "summary": event["summary"]})
         return user_events  # Add user_events with formatted key
+    
+#endpoint for deleting the tokens.json file
+@calendar_router.delete("/delete-tokens/", tags=["calendar"])
+async def delete_tokens():
+    try:
+        os.remove("tokens.json")
+        return {"message": "tokens.json deleted successfully"}
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="tokens.json not found")

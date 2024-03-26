@@ -1,4 +1,5 @@
 #Libraries
+from http.client import HTTPResponse
 from fastapi import HTTPException, APIRouter
 import os
 from dotenv import load_dotenv
@@ -35,6 +36,7 @@ def load_content():
       current_datetime = datetime.datetime.now()
       formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
       text_content = f"Current date and time: {formatted_datetime}\n"
+      text_content = text_content + "Below are the fetched events from several google calendars' APIs"
       file.write(text_content)
   return text_content
 
@@ -79,7 +81,7 @@ async def llm_response(input_text: str):
     chat_history.append(HumanMessage(content=input_text))
     chat_history.append(AIMessage(content=response["answer"]))
 
-    return {"chat_history": chat_history}
+    return {"openAI response": response["answer"]}
 
 # Endpoint to delete text.txt
 @openAI_router.delete("/delete-text/", tags=["OpenAI"])
@@ -90,8 +92,28 @@ async def delete_text():
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="text.txt not found")
     
+# Endpoint to create a new text.txt
+@openAI_router.post("/create-text/", tags=["OpenAI"])
+async def create_text():
+    try:
+        with open("text.txt", "w", encoding="utf-8") as file:
+            file.write("Text file created successfully")
+            current_datetime = datetime.datetime.now()
+            formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+            text_content = f"Current date and time: {formatted_datetime}\n"
+            text_content = text_content + "Below are the fetched events from several google calendars' APIs"
+            file.write(text_content)
+        return {"message": "Text file created successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))   
+    
 # Endpoint to append text to text.txt
 @openAI_router.post("/append-text/", tags=["OpenAI"])
+async def try_append_text(text_to_append: str):
+    await append_text(text_to_append)  # No need to await the HTTPResponse
+    return {"message": "Text appended successfully. Retrieval chain updated."}
+    
+    
 async def append_text(text_to_append: str):
     try:
         with open("text.txt", "a", encoding="utf-8") as file:
@@ -103,6 +125,7 @@ async def append_text(text_to_append: str):
         vector = FAISS.from_documents(documents, embeddings)
         retriever = vector.as_retriever()
         retrieval_chain = create_retrieval_chain(retriever, document_chain)
-        return {"message": "Text appended successfully. Retrieval chain updated."}
+        # # FastAPI handles 200 status for you
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
