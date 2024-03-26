@@ -13,7 +13,7 @@ The frontend must include:
    for that, use the endpoints
    /calendar/authorize and
    /calendar/get-calendar-events
-   it needs the start and end dates, use a calendr input. W  atch out the format 2023-03-15T00:00:00Z
+   it needs the start and end dates, use a calendr input. Watch out the format 2023-03-15T00:00:00Z
 
 4. Option for resetting all the application context.
    for that, use the endpoints
