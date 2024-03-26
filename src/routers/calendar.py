@@ -61,28 +61,8 @@ async def get_calendar_events(start: str, end: str):
     try:
         if not start or not end:
             raise HTTPException(status_code=422, detail="Missing start_date or end_date in request body")
-        
-        """
-        start_date = datetime.datetime(2023, 3, 15, 0, 0, 0).isoformat() + "Z"
-        print(start_date) #  2023-03-15T00:00:00Z
-        end_date = datetime.datetime(2024, 3, 16, 23, 59, 59).isoformat() + "Z"
-        print(end_date)   #  2024-03-16T23:59:59Z
-        """
- 
-        # Parse the date string into a datetime object
-        """
-        start_date = datetime.datetime.fromisoformat(start)
-        end_date = datetime.datetime.fromisoformat(end)
-        """
-
-        # Format the datetime object into ISO 8601 format with 'Z' indicating UTC timezone
-        """
-        formatted_start_date = start_date.isoformat() + "Z"
-        formatted_end_date = end_date.isoformat() + "Z"
-        """
 
         creds_list = get_credentials()
-        #print(len(creds_list))
         if not creds_list:
             raise HTTPException(status_code=401, detail="No authorized accounts found. Please authorize an account first.")
 
@@ -90,39 +70,34 @@ async def get_calendar_events(start: str, end: str):
         # Create a list to store events for all users
         all_events = {}
         for creds in creds_list:
-            service = build("calendar", "v3", credentials=creds)
-            events_result = (
-                service.events()
-                .list(
-                    calendarId="primary",
-                    timeMin=start,
-                    timeMax=end,
-                    singleEvents=True,
-                    orderBy="startTime",
-                )
-                .execute()
-            )
-            events = events_result.get("items", [])
-
-            #print("EVENTS:")
-            cont=1
-            if not events:
-                print("No events found for user %d" %cont)
-            else:
-                user_events = []
-                #print("User %d :\n" %cont)
-                for event in events:
-                    start = event["start"].get("dateTime", event["start"].get("date"))
-                    user_events.append({"start": start, "summary": event["summary"]})
-                    #print(start, event["summary"])
-                #all_events.append(user_events)
-                all_events[f"User {cont}"] = user_events  # Add user_events with formatted key
+            user_events = await fetch_user_events(creds, start, end, cont)
+            all_events[f"User {cont}"] = user_events  # Add user_events with formatted key
             cont+=1
-        # Return a JSON response containing the events
-        #return JSONResponse(json.dumps({"events": all_events}))
         return all_events
-
     except Exception as error:
         raise HTTPException(status_code=500, detail=f"An error occurred: {error}")
 
 
+async def fetch_user_events(creds, start: str, end: str, numuser: int):
+    service = build("calendar", "v3", credentials=creds)
+    events_result = (
+        service.events()
+        .list(
+            calendarId="primary",
+            timeMin=start,
+            timeMax=end,
+            singleEvents=True,
+            orderBy="startTime",
+        )
+        .execute()
+    )
+    events = events_result.get("items", [])
+
+    if not events:
+        print("No events found for user %d" %numuser)
+    else:
+        user_events = []
+        for event in events:
+            start = event["start"].get("dateTime", event["start"].get("date"))
+            user_events.append({"start": start, "summary": event["summary"]})
+        return user_events  # Add user_events with formatted key
