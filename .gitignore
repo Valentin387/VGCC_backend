@@ -14,3 +14,6 @@ tokens.json
 
 # Ignore the virtual environment
 venv/
+
+# Ignore the user fetched data
+text.txt
