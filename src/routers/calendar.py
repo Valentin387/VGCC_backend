@@ -82,6 +82,7 @@ async def get_calendar_events(start: str, end: str):
         """
 
         creds_list = get_credentials()
+        #print(len(creds_list))
         if not creds_list:
             raise HTTPException(status_code=401, detail="No authorized accounts found. Please authorize an account first.")
 
@@ -106,7 +107,7 @@ async def get_calendar_events(start: str, end: str):
             #print("EVENTS:")
             cont=1
             if not events:
-                print("No events found.")
+                print("No events found for user %d" %cont)
             else:
                 user_events = []
                 #print("User %d :\n" %cont)
