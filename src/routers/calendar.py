@@ -87,7 +87,7 @@ async def get_calendar_events(start: str, end: str):
 
         cont=1
         # Create a list to store events for all users
-        all_events = []
+        all_events = {}
         for creds in creds_list:
             service = build("calendar", "v3", credentials=creds)
             events_result = (
@@ -103,18 +103,19 @@ async def get_calendar_events(start: str, end: str):
             )
             events = events_result.get("items", [])
 
-            print("EVENTS:")
+            #print("EVENTS:")
             cont=1
             if not events:
                 print("No events found.")
             else:
                 user_events = []
-                print("User %d :\n" %cont)
+                #print("User %d :\n" %cont)
                 for event in events:
                     start = event["start"].get("dateTime", event["start"].get("date"))
                     user_events.append({"start": start, "summary": event["summary"]})
                     #print(start, event["summary"])
-                all_events.append(user_events)
+                #all_events.append(user_events)
+                all_events[f"User {cont}"] = user_events  # Add user_events with formatted key
             cont+=1
         # Return a JSON response containing the events
         #return JSONResponse(json.dumps({"events": all_events}))
