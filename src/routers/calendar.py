@@ -2,6 +2,7 @@
 from fastapi import HTTPException, APIRouter
 import os.path
 import json
+from fastapi.responses import JSONResponse
 import datetime
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -84,9 +85,11 @@ async def get_calendar_events(start: str, end: str):
         if not creds_list:
             raise HTTPException(status_code=401, detail="No authorized accounts found. Please authorize an account first.")
 
+        cont=1
+        # Create a list to store events for all users
+        all_events = []
         for creds in creds_list:
             service = build("calendar", "v3", credentials=creds)
-
             events_result = (
                 service.events()
                 .list(
@@ -100,13 +103,22 @@ async def get_calendar_events(start: str, end: str):
             )
             events = events_result.get("items", [])
 
-            print("Events:")
+            print("EVENTS:")
+            cont=1
             if not events:
                 print("No events found.")
             else:
+                user_events = []
+                print("User %d :\n" %cont)
                 for event in events:
                     start = event["start"].get("dateTime", event["start"].get("date"))
-                    print(start, event["summary"])
+                    user_events.append({"start": start, "summary": event["summary"]})
+                    #print(start, event["summary"])
+                all_events.append(user_events)
+            cont+=1
+        # Return a JSON response containing the events
+        #return JSONResponse(json.dumps({"events": all_events}))
+        return all_events
 
     except Exception as error:
         raise HTTPException(status_code=500, detail=f"An error occurred: {error}")
