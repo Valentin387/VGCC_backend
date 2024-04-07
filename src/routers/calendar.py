@@ -22,6 +22,18 @@ SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 def parse_iso_date(date_str):
     return datetime.datetime.fromisoformat(date_str)
 
+def get_credentials_info():
+    """Retrieve stored credentials from tokens.json."""
+    credentials_info = []
+    if os.path.exists("src/tokens.json"):
+        with open("src/tokens.json", "r") as token_file:
+            tokens = json.load(token_file)
+            for idx, token in enumerate(tokens):
+                token_dict = json.loads(token)  # Parse token string as JSON
+                expiry_date = token_dict["expiry"]
+                credentials_info.append({"name": f"User {idx+1}", "description": expiry_date})
+    return credentials_info
+
 def get_credentials():
     """Retrieve stored credentials from tokens.json."""
     if os.path.exists("tokens.json"):
@@ -39,6 +51,12 @@ def save_credentials(creds):
     tokens.append(creds.to_json())
     with open("tokens.json", "w") as token_file:
         json.dump(tokens, token_file)
+
+
+@calendar_router.get("/credentials-info", tags=["calendar"])
+async def get_credentials_info_endpoint():
+    """Returns information about stored credentials."""
+    return get_credentials_info()
 
 
 @calendar_router.post("/authorize", tags=["calendar"])
