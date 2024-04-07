@@ -10,6 +10,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google.auth.transport.requests import Request
 from routers.openAI import append_text
+from models.calendarModels import *
 
 
 # Initialize FastAPI router
@@ -60,23 +61,24 @@ async def get_credentials_info_endpoint():
 
 
 @calendar_router.post("/authorize", tags=["calendar"])
-async def authorize_accounts(addNewAccount: bool = False):
+async def authorize_accounts(addNewAccount_data: InputBoolean):
     """Shows basic usage of the Google Calendar API."""
+    addNewAccount = addNewAccount_data.input_boolean
     creds_list = get_credentials()
     if not creds_list:
-        flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
+        flow = InstalledAppFlow.from_client_secrets_file("src/credentials.json", SCOPES)
         creds = flow.run_local_server(port=0)
         save_credentials(creds)
         creds_list = [creds]
     elif addNewAccount:
-        flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
+        flow = InstalledAppFlow.from_client_secrets_file("src/credentials.json", SCOPES)
         creds = flow.run_local_server(port=0, authorization_prompt_message="Select the account to use or add a new one: ")
         save_credentials(creds)
         creds_list.append(creds)
 
 
 @calendar_router.get("/get-calendar-events", tags=["calendar"])
-async def get_calendar_events(start: str, end: str):
+async def get_calendar_events(start : str, end : str):
     try:
         if not start or not end:
             raise HTTPException(status_code=422, detail="Missing start_date or end_date in request body")
