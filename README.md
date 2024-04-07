@@ -10,13 +10,14 @@ The frontend must include:
    for that, use the endpoints /openAI/llm/response
 
 2. Option for adding a google calendar account's events.
-   for that, use the endpoints
+   for that, use the pipeline of endpoints:
    /calendar/authorize and
    /calendar/get-calendar-events
-   it needs the start and end dates, use a calendr input. Watch out the format 2023-03-15T00:00:00Z
+   /calendar/credentials-info
+   it needs the start and end dates, use a calendar input in the HTML for doing so. Watch out the format 2023-03-15T00:00:00Z
 
 4. Option for resetting all the application context.
-   for that, use the endpoints
+   for that, use pipeline of endpoints:
    /calendar/delete-tokens
    /openAI/delete-text
    /openAI/create-text
