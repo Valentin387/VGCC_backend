@@ -15,6 +15,7 @@ from langchain.chains import create_retrieval_chain
 from langchain_core.documents import Document
 from langchain_core.prompts import MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
+from models.openAIModels import InputText
 
 load_dotenv() 
 
@@ -52,7 +53,7 @@ vector = FAISS.from_documents(documents, embeddings)
 
 # First we need a prompt that we can pass into an LLM to generate this search query
 prompt = ChatPromptTemplate.from_messages([
-    ("system", "Answer the user's questions based on the below context:\n\n{context}"),
+    ("system", "Answer the user's questions based on the below context: \n\n{context}"),
     MessagesPlaceholder(variable_name="chat_history"),
     ("user", "{input}"),
 ])
@@ -68,10 +69,12 @@ chat_history = [HumanMessage(content="Hello"), AIMessage(content="Hello! how can
 # Initialize FastAPI router
 openAI_router = APIRouter()
 
+    
 # Endpoint to receive user input and return LLM response
 @openAI_router.post("/llm/response/", tags=["OpenAI"])
-async def llm_response(input_text: str):
+async def llm_response(input_text_data: InputText):
     # Get LLM response for user input
+    input_text = input_text_data.input_text
 
     response = retrieval_chain.invoke({
     "chat_history": chat_history,
@@ -109,7 +112,8 @@ async def create_text():
     
 # Endpoint to append text to text.txt
 @openAI_router.post("/append-text/", tags=["OpenAI"])
-async def try_append_text(text_to_append: str):
+async def try_append_text(text_to_append_data: InputText):
+    text_to_append = text_to_append_data.input_text
     await append_text(text_to_append)  # No need to await the HTTPResponse
     return {"message": "Text appended successfully. Retrieval chain updated."}
     
