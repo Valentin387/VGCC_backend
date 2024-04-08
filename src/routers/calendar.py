@@ -26,8 +26,8 @@ def parse_iso_date(date_str):
 def get_credentials_info():
     """Retrieve stored credentials from tokens.json."""
     credentials_info = []
-    if os.path.exists("src/tokens.json"):
-        with open("src/tokens.json", "r") as token_file:
+    if os.path.exists("tokens.json"):
+        with open("tokens.json", "r") as token_file:
             tokens = json.load(token_file)
             for idx, token in enumerate(tokens):
                 token_dict = json.loads(token)  # Parse token string as JSON
