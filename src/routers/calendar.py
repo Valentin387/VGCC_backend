@@ -127,6 +127,9 @@ async def fetch_user_events(creds, start: str, end: str, numuser: int):
 #endpoint for deleting the tokens.json file
 @calendar_router.delete("/delete-tokens/", tags=["calendar"])
 async def delete_tokens():
+    # check if the file exists
+    if not os.path.exists("tokens.json"):
+        raise HTTPException(status_code=404, detail="tokens.json not found")
     try:
         os.remove("tokens.json")
         return {"message": "tokens.json deleted successfully"}
