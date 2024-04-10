@@ -89,6 +89,9 @@ async def llm_response(input_text_data: InputText):
 # Endpoint to delete text.txt
 @openAI_router.delete("/delete-text/", tags=["OpenAI"])
 async def delete_text():
+    #check if the file exists
+    if not os.path.exists("text.txt"):
+        raise HTTPException(status_code=404, detail="text.txt not found")
     try:
         os.remove("text.txt")
         return {"message": "text.txt deleted successfully"}

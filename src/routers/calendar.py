@@ -66,12 +66,12 @@ async def authorize_accounts(addNewAccount_data: InputBoolean):
     addNewAccount = addNewAccount_data.input_boolean
     creds_list = get_credentials()
     if not creds_list:
-        flow = InstalledAppFlow.from_client_secrets_file("src/credentials.json", SCOPES)
+        flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
         creds = flow.run_local_server(port=0)
         save_credentials(creds)
         creds_list = [creds]
     elif addNewAccount:
-        flow = InstalledAppFlow.from_client_secrets_file("src/credentials.json", SCOPES)
+        flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
         creds = flow.run_local_server(port=0, authorization_prompt_message="Select the account to use or add a new one: ")
         save_credentials(creds)
         creds_list.append(creds)
@@ -127,6 +127,9 @@ async def fetch_user_events(creds, start: str, end: str, numuser: int):
 #endpoint for deleting the tokens.json file
 @calendar_router.delete("/delete-tokens/", tags=["calendar"])
 async def delete_tokens():
+    # check if the file exists
+    if not os.path.exists("tokens.json"):
+        raise HTTPException(status_code=404, detail="tokens.json not found")
     try:
         os.remove("tokens.json")
         return {"message": "tokens.json deleted successfully"}
