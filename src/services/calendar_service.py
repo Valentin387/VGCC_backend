@@ -71,40 +71,42 @@ async def get_calendar_events(start: str, end: str):
 
     return events_list
 
+from models.calendarModels import EventCreateInput
+from googleapiclient.errors import HttpError
+
 async def create_calendar_event(event_data: EventCreateInput):
     creds_list = get_credentials()
     if not creds_list:
-        raise HTTPException(status_code=401, detail="No authorized accounts found")
-    
+        raise HTTPException(status_code=401, detail="No authorized accounts found.")
+
     event_body = {
         'summary': event_data.summary,
         'location': event_data.location,
         'description': event_data.description,
         'start': {
             'dateTime': event_data.start,
-            'timeZone': event_data.time_zone,
+            'timeZone': 'America/Los_Angeles',
         },
         'end': {
             'dateTime': event_data.end,
-            'timeZone': event_data.time_zone,
+            'timeZone': 'America/Los_Angeles',
         },
         'attendees': [{'email': attendee} for attendee in event_data.attendees],
         'reminders': {
             'useDefault': False,
-            'overrides': [
-                {'method': 'email', 'minutes': 24 * 60},
+            'overrides': event_data.reminders or [
+                {'method': 'email', 'minutes': 24 * 60},  # 1 day before
                 {'method': 'popup', 'minutes': 10},
             ],
         },
     }
 
-    for creds in creds_list:
-        service = build('calendar', 'v3', credentials=creds)
-        try:
-            event = service.events().insert(calendarId='primary', body=event_body).execute()
-            return {"message": "Event created", "event_id": event['id']}
-        except HttpError as error:
-            raise HTTPException(status_code=500, detail=str(error))
+    service = build('calendar', 'v3', credentials=creds_list[0])  # Using the first available credentials
+    try:
+        event = service.events().insert(calendarId='primary', body=event_body).execute()
+        return {"message": "Event created successfully", "event_id": event['id']}
+    except HttpError as error:
+        raise HTTPException(status_code=500, detail=str(error))
 
 async def delete_tokens():
     """
