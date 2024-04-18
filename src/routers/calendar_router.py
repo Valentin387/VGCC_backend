@@ -27,6 +27,10 @@ async def calendar_events(start: str, end: str):
     """
     return await get_calendar_events(start, end)
 
+@router.post("/event", tags=["Calendar"])
+async def create_event(event_data: EventCreateInput):
+    return await create_calendar_event(event_data)
+
 @router.delete("/delete-tokens", tags=["Calendar"])
 async def tokens_delete():
     """
