@@ -18,3 +18,7 @@ async def create_text():
 @router.post("/append-text/")
 async def append_text(input_data: InputText):
     return await handle_text_append(input_data)
+
+@router.post("/create-event/")
+async def create_event(event_data: EventCreateInput):
+    return await schedule_event(event_data)
