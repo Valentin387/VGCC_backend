@@ -1,4 +1,5 @@
-from models.openAIModels import InputText
+from models.openAIModels import InputText, EventCreateInput
+from services.calendar_service import create_calendar_event
 from fastapi import HTTPException
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
