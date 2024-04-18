@@ -5,7 +5,12 @@ from routers.calendar import calendar_router
 from fastapi.middleware.cors import CORSMiddleware
 
 # Initialize FastAPI app
-app = FastAPI()
+app = FastAPI(
+    title='VGCC_backend',
+    description='API service using FastAPI, with integrated OpenAI and Calendar functionalities',
+    docs_url="/docs",
+    redoc_url=None
+)
 
 # Configure CORS settings
 origins = [
