@@ -46,6 +46,13 @@ VGCC_backend/
   - Ensure this file is present as either `credentials.json` or `src/credentials.json` depending on the environment setup.
   - The authentication flow cannot be interrupted once started, which might be cumbersome for users.
 
+## Docker
+
+```
+docker build -t vgcc_backend .
+docker run -d --name vgcc_backend_app -p 8000:8000 vgcc_backend
+```
+
 ## Integration with Frontend
 
 Frontend requirements:
