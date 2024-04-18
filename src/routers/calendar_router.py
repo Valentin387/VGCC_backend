@@ -4,7 +4,7 @@ from services.calendar_service import (
     get_credentials_info, authorize_accounts, get_calendar_events, delete_tokens
 )
 
-router = APIRouter()
+calendar_router = APIRouter()
 
 @router.get("/credentials-info", response_model=list, tags=["Calendar"])
 async def credentials_info_endpoint():
