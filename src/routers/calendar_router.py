@@ -20,12 +20,12 @@ async def authorize(input_data: InputBoolean):
     """
     return await authorize_accounts(input_data)
 
-@router.get("/events", tags=["Calendar"])
-async def calendar_events(start: str, end: str):
+@router.post("/event", response_model=dict, tags=["Calendar"])
+async def create_event(event_data: EventCreateInput):
     """
-    Endpoint to fetch calendar events within a specified datetime range.
+    Endpoint to create a new calendar event.
     """
-    return await get_calendar_events(start, end)
+    return await create_calendar_event(event_data)
 
 @router.post("/event", tags=["Calendar"])
 async def create_event(event_data: EventCreateInput):
