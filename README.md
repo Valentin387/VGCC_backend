@@ -1,8 +1,20 @@
 # VGCC_backend
+![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
+![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg?style=for-the-badge&logo=python)
+![GitHub last commit](https://img.shields.io/github/last-commit/Valentin387/VGCC_backend?style=for-the-badge)
+![Issues](https://img.shields.io/github/issues/Valentin387/VGCC_backend?style=for-the-badge)
+![Pull Requests](https://img.shields.io/github/issues-pr/Valentin387/VGCC_backend?style=for-the-badge)
 
 Backend for a versatile application combining Google Calendar and OpenAI's ChatGPT APIs, using FastAPI.
 
 Just run `main.py` and that's it!
+
+## Features
+
+1. **Chat with AI**: Utilizes OpenAI's powerful models to answer queries.
+2. **Google Calendar Integration**: Manage and view your Google Calendar events.
+3. **RESTful API**: Easily integrate with frontends such as Angular or React.
+
 
 ## Structure
 
@@ -27,20 +39,6 @@ VGCC_backend/
     ├── openAIModels.py
     └── calendarModels.py
 ```
-
-## Badges
-
-![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
-![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg?style=for-the-badge&logo=python)
-![GitHub last commit](https://img.shields.io/github/last-commit/your-username/VGCC_backend?style=for-the-badge)
-![Issues](https://img.shields.io/github/issues/your-username/VGCC_backend?style=for-the-badge)
-![Pull Requests](https://img.shields.io/github/issues-pr/your-username/VGCC_backend?style=for-the-badge)
-
-## Features
-
-1. **Chat with AI**: Utilizes OpenAI's powerful models to answer queries.
-2. **Google Calendar Integration**: Manage and view your Google Calendar events.
-3. **RESTful API**: Easily integrate with frontends such as Angular or React.
 
 ## Caution
 
