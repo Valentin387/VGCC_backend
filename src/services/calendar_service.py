@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from models.calendarModels import InputBoolean
+from models.calendarModels import InputBoolean, EventCreateInput
 
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 TOKENS_FILE = 'tokens.json'
@@ -70,6 +70,41 @@ async def get_calendar_events(start: str, end: str):
         events_list.extend(events)
 
     return events_list
+
+async def create_calendar_event(event_data: EventCreateInput):
+    creds_list = get_credentials()
+    if not creds_list:
+        raise HTTPException(status_code=401, detail="No authorized accounts found")
+    
+    event_body = {
+        'summary': event_data.summary,
+        'location': event_data.location,
+        'description': event_data.description,
+        'start': {
+            'dateTime': event_data.start,
+            'timeZone': event_data.time_zone,
+        },
+        'end': {
+            'dateTime': event_data.end,
+            'timeZone': event_data.time_zone,
+        },
+        'attendees': [{'email': attendee} for attendee in event_data.attendees],
+        'reminders': {
+            'useDefault': False,
+            'overrides': [
+                {'method': 'email', 'minutes': 24 * 60},
+                {'method': 'popup', 'minutes': 10},
+            ],
+        },
+    }
+
+    for creds in creds_list:
+        service = build('calendar', 'v3', credentials=creds)
+        try:
+            event = service.events().insert(calendarId='primary', body=event_body).execute()
+            return {"message": "Event created", "event_id": event['id']}
+        except HttpError as error:
+            raise HTTPException(status_code=500, detail=str(error))
 
 async def delete_tokens():
     """
