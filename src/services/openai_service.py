@@ -86,3 +86,21 @@ async def handle_text_append(input_data: InputText):
         file.write(text_to_append + "\n")
     initialize_text_content_and_chain()  # Re-load and re-initialize after appending
     return {"message": "Text appended successfully. Retrieval chain updated."}
+
+async def interpret_and_schedule_event(input_text_data: InputText):
+    """
+    Interprets natural language input to schedule a calendar event.
+    Uses ChatGPT to extract event details from the input text.
+    """
+    # Ask ChatGPT to interpret the input text and extract event details
+    prompt = f"Extract event details from the following input: {input_text_data.input_text}"
+    chat_response = llm.generate(prompt)
+    try:
+        # Assuming the response is JSON-formatted event details
+        event_details = json.loads(chat_response)
+        event_data = EventCreateInput(**event_details)
+        return await create_calendar_event(event_data)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Failed to interpret event details.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
