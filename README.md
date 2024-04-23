@@ -7,7 +7,6 @@
 
 Backend for a versatile application combining Google Calendar and OpenAI's ChatGPT APIs, using FastAPI.
 
-I recommend to use the version tagged with the tag "final-release". It´s the most stable one, from there on I got creative accepting pull requests... 
 
 Just run `main.py` and that's it!
 
