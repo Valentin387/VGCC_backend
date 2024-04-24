@@ -7,6 +7,7 @@
 
 Backend for a versatile application combining Google Calendar and OpenAI's ChatGPT APIs, using FastAPI.
 
+My tutorial: https://www.youtube.com/watch?v=wN4u0xLywMY 
 
 Just run `main.py` and that's it!
 
